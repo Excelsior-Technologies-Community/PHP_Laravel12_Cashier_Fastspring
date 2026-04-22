@@ -36,11 +36,11 @@ class PlanSeeder extends Seeder
 
             [
 
-                'name' => 'Basic', 
+                'name' => 'Basic Plan', 
 
                 'slug' => 'basic', 
 
-                'stripe_plan' => 'price_1LXOzsGzlk2XAanfTskz9n', 
+                'stripe_plan' => env('STRIPE_BASIC_PRICE'), 
 
                 'price' => 10, 
 
@@ -50,11 +50,11 @@ class PlanSeeder extends Seeder
 
             [
 
-                'name' => 'Premium', 
+                'name' => 'Premium Plan', 
 
                 'slug' => 'premium', 
 
-                'stripe_plan' => 'price_1LXP23Gzlk2XAanf4zQZdi', 
+                'stripe_plan' => env('STRIPE_PREMIUM_PRICE'),
 
                 'price' => 100, 
 

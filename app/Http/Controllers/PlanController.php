@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Plan;
 
+
 class PlanController extends Controller
 {
     // Show all plans
@@ -14,32 +15,48 @@ class PlanController extends Controller
         return view('plans', compact('plans'));
     }
 
-    // Show subscription page for a selected plan
+    // Show subscription page
     public function show(Plan $plan)
     {
-        // Create Stripe SetupIntent for the logged-in user
         $intent = auth()->user()->createSetupIntent();
-
         return view('subscription', compact('plan', 'intent'));
     }
 
-    // Handle subscription creation
-   public function subscription(Request $request)
-{
-    $request->validate([
-        'plan' => 'required|exists:plans,id',
-        'payment_method' => 'required|string',
-    ]);
+    // Create subscription
+    public function subscription(Request $request)
+    {
+        $user = $request->user();
 
-    $plan = Plan::findOrFail($request->plan);
+        $request->validate([
+            'plan' => 'required|exists:plans,id',
+            'payment_method' => 'required|string',
+        ]);
 
-    $request->user()
-        ->newSubscription('default', $plan->stripe_plan)
-        ->create($request->payment_method);
+        $plan = Plan::findOrFail($request->plan);
 
-    return redirect()
-        ->route('plans.index')
-        ->with('success', 'Subscription purchased successfully!');
-}
+        //  Prevent subscribing to same plan again
+        if ($user->subscribedToPrice($plan->stripe_plan, 'default')) {
+            return back()->with('error', 'You are already subscribed to this plan!');
+        }
 
+        // Create subscription (will replace old one if needed)
+        $user->newSubscription('default', $plan->stripe_plan)
+            ->create($request->payment_method);
+
+        return redirect()->route('plans.index')
+            ->with('success', 'Subscription purchased successfully!');
+    }
+
+    // Cancel subscription
+    public function cancel(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->subscribed('default')) {
+            $user->subscription('default')->cancel();
+        }
+
+        return redirect()->route('plans.index')
+            ->with('success', 'Subscription cancelled successfully!');
+    }
 }
