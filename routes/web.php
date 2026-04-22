@@ -3,7 +3,7 @@
   
 
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\Auth;
  
 
 use App\Http\Controllers\PlanController;
@@ -58,4 +58,8 @@ Route::middleware("auth")->group(function () {
 
     Route::post('subscription', [PlanController::class, 'subscription'])
         ->name('subscription.create');
+
+       // NEW: Cancel subscription
+    Route::post('subscription/cancel', [PlanController::class, 'cancel'])
+        ->name('subscription.cancel');       
 });
